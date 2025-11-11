@@ -55,7 +55,7 @@ All colors MUST be HSL.
 @layer base {
   * {
     @apply border-border;
-    cursor: url('/banana-cursor.png') 12 0, auto;
+    cursor: url('banana-cursor.png') 12 0, auto;
   }
 
   body {
@@ -67,7 +67,7 @@ All colors MUST be HSL.
   }
 
   a, button {
-    cursor: url('/banana-cursor.png') 12 0, pointer;
+    cursor: url('banana-cursor.png') 12 0, pointer;
   }
 }
 
