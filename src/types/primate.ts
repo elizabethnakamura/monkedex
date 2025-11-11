@@ -9,6 +9,10 @@ export interface PrimateEntry {
   realOrAnimated: 'physical' | 'animated' | 'cgi';
   submittedBy?: string;
   imageUrl: string;
+  tags?: string[];
+  isUserEntry?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface UserEntryData {

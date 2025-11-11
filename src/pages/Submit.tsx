@@ -3,13 +3,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SPECIES_OPTIONS, MEDIA_TYPE_OPTIONS } from '@/types/primate';
+import { SPECIES_OPTIONS, MEDIA_TYPE_OPTIONS } from '@/utils/constants';
 import { parseCSV } from '@/utils/csvParser';
 import { addUserEntry, generateEntryId } from '@/utils/entryStorage';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Download } from 'lucide-react';
+import { ImageUpload } from '@/components/entry/ImageUpload';
+import { TagInput } from '@/components/tags/TagInput';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 
 const Submit = () => {
   const navigate = useNavigate();
@@ -22,10 +26,11 @@ const Submit = () => {
     country: '',
     realOrAnimated: '',
     sourceLink: '',
+    tags: [] as string[],
   });
   
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [isOptionalOpen, setIsOptionalOpen] = useState(false);
 
   const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -46,18 +51,6 @@ const Submit = () => {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -72,8 +65,11 @@ const Submit = () => {
       year: parseInt(formData.year),
       country: formData.country,
       realOrAnimated: formData.realOrAnimated as any,
-      imageUrl: imagePreview || 'https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=800',
-      submittedBy: 'User',
+      imageUrl: imageUrl || 'https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=800',
+      submittedBy: 'You',
+      tags: formData.tags,
+      isUserEntry: true,
+      createdAt: new Date().toISOString(),
     };
     
     addUserEntry(newEntry);
@@ -89,9 +85,9 @@ const Submit = () => {
       country: '',
       realOrAnimated: '',
       sourceLink: '',
+      tags: [],
     });
-    setImageFile(null);
-    setImagePreview('');
+    setImageUrl('');
     
     // Navigate to the new entry
     setTimeout(() => navigate(`/entry/${entryId}`), 1000);
@@ -101,174 +97,176 @@ const Submit = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="max-w-2xl mx-auto px-6 py-12">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <div className="mb-8">
-          <h1 className="text-4xl font-mono mb-4">LOG ENTRY</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4">Add Entry</h1>
           <p className="text-muted-foreground text-sm">
-            Add a new primate appearance to the archive. Entries are published instantly to the community.
+            Add a new primate appearance to your personal collection.
           </p>
         </div>
 
         {/* Single Entry Form */}
-        <form onSubmit={handleSubmit} className="space-y-6 border border-border p-8">
+        <form onSubmit={handleSubmit} className="space-y-6 border rounded-lg p-4 sm:p-8">
           <div className="space-y-2">
-            <Label htmlFor="name" className="font-mono text-sm">Name / Character Name *</Label>
+            <Label htmlFor="name">Character Name *</Label>
             <Input
               id="name"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="font-mono"
+              placeholder="e.g. King Kong"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="species" className="font-mono text-sm">Species *</Label>
-            <Select 
-              required
-              value={formData.species}
-              onValueChange={(value) => setFormData({ ...formData, species: value })}
-            >
-              <SelectTrigger className="font-mono">
-                <SelectValue placeholder="Select species" />
-              </SelectTrigger>
-              <SelectContent>
-                {SPECIES_OPTIONS.map(species => (
-                  <SelectItem key={species} value={species} className="font-mono">
-                    {species}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="species">Species *</Label>
+              <Select 
+                required
+                value={formData.species}
+                onValueChange={(value) => setFormData({ ...formData, species: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select species" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SPECIES_OPTIONS.map(species => (
+                    <SelectItem key={species} value={species}>
+                      {species}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="mediaType">Media Type *</Label>
+              <Select 
+                required
+                value={formData.mediaType}
+                onValueChange={(value) => setFormData({ ...formData, mediaType: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select media type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MEDIA_TYPE_OPTIONS.map(type => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="mediaType" className="font-mono text-sm">Media Type *</Label>
-            <Select 
-              required
-              value={formData.mediaType}
-              onValueChange={(value) => setFormData({ ...formData, mediaType: value })}
-            >
-              <SelectTrigger className="font-mono">
-                <SelectValue placeholder="Select media type" />
-              </SelectTrigger>
-              <SelectContent>
-                {MEDIA_TYPE_OPTIONS.map(type => (
-                  <SelectItem key={type.value} value={type.value} className="font-mono">
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="title" className="font-mono text-sm">Title of Appearance *</Label>
+            <Label htmlFor="title">Title of Appearance *</Label>
             <Input
               id="title"
               required
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="font-mono"
-              placeholder="e.g. Planet of the Apes"
+              placeholder="e.g. King Kong"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="year" className="font-mono text-sm">Year *</Label>
+              <Label htmlFor="year">Year *</Label>
               <Input
                 id="year"
                 type="number"
                 required
                 value={formData.year}
                 onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                className="font-mono"
                 min="1895"
                 max={new Date().getFullYear()}
+                placeholder="2024"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="country" className="font-mono text-sm">Country *</Label>
+              <Label htmlFor="country">Country *</Label>
               <Input
                 id="country"
                 required
                 value={formData.country}
                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                className="font-mono"
                 placeholder="e.g. USA"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="realOrAnimated" className="font-mono text-sm">Format *</Label>
+            <Label htmlFor="realOrAnimated">Format *</Label>
             <Select 
               required
               value={formData.realOrAnimated}
               onValueChange={(value) => setFormData({ ...formData, realOrAnimated: value })}
             >
-              <SelectTrigger className="font-mono">
+              <SelectTrigger>
                 <SelectValue placeholder="Select format" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="physical" className="font-mono">Physical</SelectItem>
-                <SelectItem value="animated" className="font-mono">Animated</SelectItem>
-                <SelectItem value="cgi" className="font-mono">CGI / Digital</SelectItem>
+                <SelectItem value="physical">Physical</SelectItem>
+                <SelectItem value="animated">Animated</SelectItem>
+                <SelectItem value="cgi">CGI / Digital</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="image" className="font-mono text-sm">Image (optional)</Label>
-            <Input
-              id="image"
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="font-mono"
-            />
-            {imagePreview && (
-              <div className="mt-4 border border-border p-4">
-                <p className="text-xs text-muted-foreground font-mono mb-2">Preview:</p>
-                <img src={imagePreview} alt="Preview" className="max-h-48 object-contain" />
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Note: For GitHub workflow, save image as [charactername]_[title]_[year].jpg in src/assets/
-            </p>
-          </div>
+          <Collapsible open={isOptionalOpen} onOpenChange={setIsOptionalOpen}>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between" type="button">
+                Optional Fields
+                <ChevronDown className={`h-4 w-4 transition-transform ${isOptionalOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-6 pt-4">
+              <ImageUpload
+                imageUrl={imageUrl}
+                onImageChange={(url) => setImageUrl(url)}
+              />
 
-          <div className="space-y-2">
-            <Label htmlFor="sourceLink" className="font-mono text-sm">Source Link (optional)</Label>
-            <Input
-              id="sourceLink"
-              type="url"
-              value={formData.sourceLink}
-              onChange={(e) => setFormData({ ...formData, sourceLink: e.target.value })}
-              className="font-mono"
-              placeholder="https://..."
-            />
-          </div>
+              <div className="space-y-2">
+                <TagInput
+                  tags={formData.tags}
+                  onTagsChange={(tags) => setFormData({ ...formData, tags })}
+                  placeholder="Add tags (press Enter)"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="sourceLink">Source Link</Label>
+                <Input
+                  id="sourceLink"
+                  type="url"
+                  value={formData.sourceLink}
+                  onChange={(e) => setFormData({ ...formData, sourceLink: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           <div className="pt-4">
-            <Button type="submit" className="w-full font-mono">
+            <Button type="submit" className="w-full">
               Publish Entry
             </Button>
           </div>
         </form>
 
-        <div className="mt-8 mb-6 text-center">
-          <p className="text-sm text-muted-foreground font-mono">OR</p>
+        <div className="my-8 text-center">
+          <p className="text-sm text-muted-foreground">OR</p>
         </div>
 
         {/* CSV Upload Section */}
-        <div className="border border-border p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-mono">Bulk Upload (CSV)</h2>
+        <div className="border rounded-lg p-4 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 className="text-lg font-semibold">Bulk Upload (CSV)</h2>
             <a href="/monkedex_entry_template.csv" download>
-              <Button variant="outline" size="sm" className="font-mono">
+              <Button variant="outline" size="sm">
                 <Download className="mr-2 h-4 w-4" />
                 Download Template
               </Button>
@@ -276,7 +274,7 @@ const Submit = () => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="csv-upload" className="font-mono text-sm">
+            <Label htmlFor="csv-upload">
               Upload CSV File
             </Label>
             <Input
@@ -284,10 +282,9 @@ const Submit = () => {
               type="file"
               accept=".csv"
               onChange={handleCSVUpload}
-              className="font-mono"
             />
             <p className="text-xs text-muted-foreground">
-              Upload a CSV file to submit multiple entries at once. You'll be able to review and add images before final submission.
+              Upload a CSV file to submit multiple entries at once. You'll be able to review before final submission.
             </p>
           </div>
         </div>
