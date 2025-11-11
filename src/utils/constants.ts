@@ -13,6 +13,7 @@ export const SPECIES_OPTIONS = [
   'Macaque',
   'Langur',
   'Colobus',
+  'Monkey',
   // New World Monkeys
   'Capuchin',
   'Squirrel Monkey',

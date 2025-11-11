@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
-import { SPECIES_OPTIONS, MEDIA_TYPE_OPTIONS } from '@/types/primate';
+import { SPECIES_OPTIONS, MEDIA_TYPE_OPTIONS } from '@/utils/constants';
 import { ParsedEntry } from '@/utils/csvParser';
 import { addMultipleUserEntries } from '@/utils/entryStorage';
 import { PrimateEntry } from '@/types/primate';

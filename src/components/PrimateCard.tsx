@@ -18,14 +18,6 @@ const PrimateCard = ({ entry }: PrimateCardProps) => {
           alt={entry.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        {entry.isUserEntry && (
-          <Badge 
-            variant="secondary" 
-            className="absolute top-2 right-2 text-xs"
-          >
-            User
-          </Badge>
-        )}
       </div>
       <div className="p-3 space-y-1.5 bg-card">
         <h3 className="font-medium text-sm line-clamp-1">{entry.name}</h3>

@@ -31,16 +31,6 @@ export const EntryActions = ({
   onDelete,
   onDuplicate
 }: EntryActionsProps) => {
-  if (!isUserEntry) {
-    return (
-      <Button onClick={onDuplicate} variant="outline" size="sm">
-        <Copy className="h-4 w-4 mr-2" />
-        <span className="hidden sm:inline">Duplicate as User Entry</span>
-        <span className="sm:hidden">Duplicate</span>
-      </Button>
-    );
-  }
-
   if (isEditing) {
     return (
       <div className="flex gap-2">
@@ -61,10 +51,6 @@ export const EntryActions = ({
       <Button onClick={onEdit} variant="outline" size="sm">
         <Edit className="h-4 w-4 mr-2" />
         <span className="hidden sm:inline">Edit</span>
-      </Button>
-      <Button onClick={onDuplicate} variant="outline" size="sm">
-        <Copy className="h-4 w-4 mr-2" />
-        <span className="hidden sm:inline">Duplicate</span>
       </Button>
       <AlertDialog>
         <AlertDialogTrigger asChild>

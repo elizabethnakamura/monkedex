@@ -115,7 +115,7 @@ const EntryDetail = () => {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Image Section */}
           <div>
-            {isEditing && entry.isUserEntry ? (
+            {isEditing ? (
               <ImageUpload
                 imageUrl={editedEntry.imageUrl}
                 onImageChange={(url) => updateField('imageUrl', url)}
@@ -133,7 +133,7 @@ const EntryDetail = () => {
 
           {/* Metadata Section */}
           <div className="space-y-6">
-            {isEditing && entry.isUserEntry ? (
+            {isEditing ? (
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="name">Character Name</Label>

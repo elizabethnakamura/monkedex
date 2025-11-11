@@ -17,11 +17,6 @@ export const EntryMetadata = ({ entry }: EntryMetadataProps) => {
     <div className="space-y-4">
       <div>
         <h1 className="text-3xl md:text-4xl font-bold mb-2">{entry.name}</h1>
-        {entry.isUserEntry && (
-          <Badge variant="secondary" className="mb-4">
-            User Entry
-          </Badge>
-        )}
       </div>
 
       <div className="bg-card border rounded-lg p-4 space-y-1">
